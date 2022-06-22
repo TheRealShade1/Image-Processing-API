@@ -14,7 +14,7 @@ Jasmine for testing
 - Install: ```npm install```
 - Build: ```npm run build```
 - Lint: ```npm run lint```
-- Prettify: ```npm run prettify```
+- Prettier: ```npm run prettier```
 - Run unit tests: ```npm run test```
 - Start server: ```npm run start```
 
@@ -59,8 +59,6 @@ Node v16.15.1
 ```
   - npm run int
 ```
-
-On the client, you can view all thumbnails but clicking on the "Thumbnails" tab and you can resize and image by clicking on the "Generate Thumbnails" tab
 
 ### Testing
 
