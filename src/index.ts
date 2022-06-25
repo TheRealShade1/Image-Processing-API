@@ -1,21 +1,15 @@
 import express from 'express';
-import path from 'path';
-import favicon from 'serve-favicon';
 import routes from './routes/index';
 
-const app = express();
-const PORT = (process.env.PORT as unknown as number) || 3000;
-const HOST = 'http://localhost:';
+const app: express.Application = express();
+const port = 3000;
 
-app.use(favicon(path.resolve('dist', 'images', 'favicon.ico')));
+// Set the routes
+app.use('/api', routes);
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-app.use(routes);
-
-app.listen(PORT, () => {
-  console.log(`Listening at ${HOST + PORT}`);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server started at http://localhost:${port}/`);
 });
 
 export default app;
