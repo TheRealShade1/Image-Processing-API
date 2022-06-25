@@ -2,161 +2,54 @@ import supertest from 'supertest';
 import fs from 'fs';
 import path from 'path';
 import app from '../index';
-import imgResize from '../utilities/sharp-resize';
 
 const request = supertest(app);
 
-describe('Server API / Endpoint Test', async () => {
-  beforeAll(() => {
-    // empty build/exported-images folder before test
-    fs.rmdirSync('build/exported-images', { recursive: true });
+describe('Test endpoint response', () => {
+  it('gets the api/images endpoint and returns a 200 error if no parameters are set', async () => {
+    const response = await request.get('/api/images');
+    expect(response.status).toBe(200);
+  });
+});
 
-    // Create Dell XPS 13 folder for the test
-    try {
-      fs.mkdirSync(
-        path.resolve('build', 'exported-images', 'Dell XPS 13'),
-        { recursive: true }
-      );
-    } catch (err) {
-      console.error(
-        'Error occurred during file and folder creation for testing',
-        err
-      );
-    }
+describe('Test image processing', () => {
+  const filename = 'santamonica';
+  const width = '300';
+  const height = '300';
+  const outputPath =
+    path.join(__dirname, '../', '../', 'assets/', 'thumbnails/', filename) +
+    `-${width}-${height}.jpg`;
 
-    const pathToTestImage = path.resolve(
-      'build',
-      'test-images',
-      'Dell XPS 13.jpg'
+  it('resizes an image when proper parameters are set in the url', async () => {
+    await request.get(
+      `/api/images?filename=${filename}&width=${width}&height=${height}`
     );
-    const pathImgOutput = path.resolve(
-      'build',
-      'exported-images',
-      'Dell XPS 13',
-      'Dell XPS 13.jpg'
+    expect(fs.existsSync(outputPath)).toBeTrue();
+  });
+
+  it('returns a proper error message when the image to be processed does not exist', async () => {
+    const response = await request.get(
+      `/api/images?filename=test&width=${width}&height=${height}`
     );
-
-    try {
-      fs.copyFileSync(pathToTestImage, pathImgOutput);
-    } catch (err) {
-      console.error('Error during testing to try copying file:', err);
-    }
-
-    try {
-      if (
-        fs.existsSync(
-          path.join(
-            'build',
-            'exported-images',
-            'Dell XPS 13',
-            'Dell XPS 13.jpg'
-          )
-        )
-      ) {
-        imgResize(pathImgOutput);
-      }
-    } catch (err) {
-      console.error('Error occurred during Sharp image resize step');
-    }
+    expect(response.text).toBe(
+      'There is no such file on the server, please verify the file name.'
+    );
   });
 
-  it('get / with status of 200', async () => {
-    await request.get('/').expect(200);
+  it('returns a proper error message when one of the url parameters is not set', async () => {
+    const response = await request.get(
+      `/api/images?filename=${filename}&width=${width}`
+    );
+    expect(response.text).toBe(
+      'Please set a filename, width and height as parameters in the url (all 3 are mandatory and width and height must be numbers).'
+    );
   });
-
-  // image processing route
-  it('get /processed-images with status of 200', () => {
-    request.post('/processed-images').expect(200);
-  });
-
-  it('/processed-image generated Dell XPS 13_150.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_150.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_300.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_300.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_500.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_500.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_800.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_800.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_1080.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_1080.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_1280.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_1280.jpg'
-        )
-      )
-    ).toBeTruthy();
-  });
-
-  it('/processed-image generated Dell XPS 13_1920.jpg', () => {
-    expect(
-      fs.existsSync(
-        path.join(
-          'build',
-          'exported-images',
-          'Dell XPS 13',
-          'Dell XPS 13_1920.jpg'
-        )
-      )
-    ).toBeTruthy();
+  it('returns a proper error message if width or height are not numbers', async () => {
+    const response = await request.get(
+      `/api/images?filename=${filename}&width=${width}&height=test`
+    );
+    expect(response.text).toBe(
+      'Please set a filename, width and height as parameters in the url (all 3 are mandatory and width and height must be numbers).'
+    );
   });
 });
