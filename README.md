@@ -15,7 +15,7 @@ Jasmine for testing
 - Build: ```npm run build```
 - Lint: ```npm run lint```
 - Prettier: ```npm run prettier```
-- Run unit tests: ```npm run test```
+- Run unit tests: ```npm run jasmine```
 - Start server: ```npm run start```
 
 ### Usage
